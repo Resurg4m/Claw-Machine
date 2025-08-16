@@ -11,13 +11,17 @@ import argparse
 
 # LED strip configuration:
 LED_COUNT      = 152     # Number of LED pixels.
-LED_COUNT2     = 87 + 152     # Number of LED pixels.
+LED_COUNT2     = 152 + 87   # Number of LED pixels.
+LED_COUNT3     = 152 + 87 + 142
+#0-151 are the top colored attraction lights
+#152-239 are the play area (leave white to illuminate stuffies)
+#240-356 are the sign illumination
 LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
 #LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 10      # DMA channel to use for generating a signal (try 10)
 LED_BRIGHTNESS = 120      # Set to 0 for darkest and 255 for brightest
-LED_BRIGHTNESS2 = 200
+LED_BRIGHTNESS2 = 220
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
@@ -60,6 +64,20 @@ def rainbow(strip, wait_ms=20, iterations=9999):
         strip.show()
         time.sleep(wait_ms/1000.0)
 
+def rainbowskipmiddle(strip, wait_ms=20, iterations=9999):
+    """Draw rainbow that fades across all pixels at once."""
+    for j in range(256*iterations):
+        for i in range(strip3.numPixels()): #0-152  339-455
+#        for i in range(455-239):  # 0-152  339-455
+            if i < 152:
+                strip.setPixelColor(i, wheel((i + j) & 255))
+#            if 152 < i <= 339:
+#                pass
+            if i >= 239:
+                strip.setPixelColor(i, wheel((i+j) & 255))
+        strip.show()
+        time.sleep(wait_ms/1000.0)
+
 def rainbowCycle(strip, wait_ms=20, iterations=5):
     """Draw rainbow that uniformly distributes itself across all pixels."""
     for j in range(256*iterations):
@@ -89,9 +107,11 @@ if __name__ == '__main__':
     # Create NeoPixel object with appropriate configuration.
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
     strip2 = Adafruit_NeoPixel(LED_COUNT2, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS2, LED_CHANNEL)
+    strip3 = Adafruit_NeoPixel(LED_COUNT3, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS2, LED_CHANNEL)
     # Intialize the library (must be called once before other functions).
     strip.begin()
     strip2.begin()
+    strip3.begin()
 
     print ('Press Ctrl-C to quit.')
     if not args.clear:
@@ -111,9 +131,10 @@ if __name__ == '__main__':
             print ('Rainbow animations.')
 #            for i in range(87, 239, 1): 
 #                strip2.setPixelColor(i, (255,255,255))
-            colorWipe(strip2, Color(255,255,255))
+            colorWipe(strip3, Color(255,255,255))
             time.sleep(.5)
-            rainbow(strip)
+            #rainbowskipmiddle(strip3)
+            rainbowskipmiddle(strip3)
 #            rainbowCycle(strip)
 #            theaterChaseRainbow(strip)
 
